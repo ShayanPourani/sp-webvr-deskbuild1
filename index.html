@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html>
+<head>
+  
+  <title>Hello there!</title>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <script src="https://aframe.io/releases/0.8.0/aframe.min.js"></script>
+  <script src="https://unpkg.com/aframe-environment-component/dist/aframe-environment-component.min.js"></script>
+  <script src="https://unpkg.com/aframe-physics-extras@0.1.0/dist/aframe-physics-extras.min.js"></script>
+  <script src="//cdn.rawgit.com/donmccurdy/aframe-physics-system/v2.1.0/dist/aframe-physics-system.min.js"></script>
+  <script src="https://unpkg.com/super-hands@2.1.0/dist/super-hands.min.js"></script>
+  <script src="//cdn.rawgit.com/donmccurdy/aframe-extras/v4.1.2/dist/aframe-extras.min.js"></script>
+  <script>
+ 
+  AFRAME.registerComponent("gearmove-a", {
+    schema : {
+      target : {type:"selector"},
+      startPosition : {type:"string"},
+      endPosition : {type:"string"}
+    },
+    init: function() {
+      this.el.addEventListener("keydown:ArrowRight", function(){
+        
+        if(this.data.target.querySelectorAll("a-animation").length > 0)
+          return;
+        
+        var player = document.querySelector("player");
+        
+        var box = document.querySelector('#carTest');
+        box.removeAttribute("dynamic-body");
+        box.setAttribute("static-body");
+                
+        var animation = document.createElement("a-animation");
+        console.log("animation started and box is static");
+        animation.setAttribute("animation-end");
+        animation.setAttribute("attribute","position");
+        animation.setAttribute("from","-1.5 7.5 -4");
+        animation.setAttribute("to","1.5 7.5 -4");
+        animation.setAttribute("easing","linear");
+        animation.setAttribute("dur","800");
+        animation.setAttribute("repeat","0");
+        animation.setAttribute("fill","forwards");
+
+        animation.addEventListener("animationstart", function(){
+          console.log("animation1 started and other controls disabled");
+        });
+        
+        animation.addEventListener("animationend", function(){
+          console.log("animation1 ended and box is dynamic, controls enabled");
+          this.parentNode.removeChild(this);
+          box.removeAttribute("static-body","");
+          box.setAttribute("dynamic-body","mass","0.1");
+        });
+        
+        this.data.target.appendChild(animation);   
+      }.bind(this)); 
+    }
+  });  
+      
+  AFRAME.registerComponent("gearmove-b", {
+    schema : {
+      target : {type:"selector"},
+      startPosition : {type:"string"},
+      endPosition : {type:"string"}
+    },
+    init: function() {
+      this.el.addEventListener("keydown:ArrowLeft", function(){
+        
+        if(this.data.target.querySelectorAll("a-animation").length > 0)
+          // add trackpad listener here?
+          return;
+        
+        var box = document.querySelector('#carTest');
+        box.removeAttribute("dynamic-body");
+        box.setAttribute("static-body");
+                
+        var animation = document.createElement("a-animation");
+        console.log("animation started and box is static");
+        animation.setAttribute("animation-end");
+        animation.setAttribute("attribute","position");
+        animation.setAttribute("from","1.5 7.5 -4");
+        animation.setAttribute("to","-1.5 7.5 -4");
+        animation.setAttribute("easing","linear");
+        animation.setAttribute("dur","800");
+        animation.setAttribute("repeat","0");
+        animation.setAttribute("fill","forwards");
+
+        animation.addEventListener("animationstart", function(){
+          console.log("animation1 started");
+        });
+        
+        animation.addEventListener("animationend", function(){
+          console.log("animation ended and box is dynamic");
+          this.parentNode.removeChild(this);
+          box.removeAttribute("static-body","");
+          box.setAttribute("dynamic-body","mass","0.1");
+        });
+        
+        this.data.target.appendChild(animation);   
+      }.bind(this)); 
+    }
+  });  
+    
+
+  AFRAME.registerComponent("endgame-refresh",{
+    schema: {
+      target: {type: "selector"}
+    },
+    
+    init: function() {
+      this.el.addEventListener("click", function(){
+        location.reload();
+      })
+    }
+  });
+
+  AFRAME.registerComponent("collision-check",{
+    schema : {
+      target: {type: "selector"}
+    },
+    
+    init: function() {
+      this.el.addEventListener("collide", function(){
+        console.log("i hit something");
+        
+        var endgame = document.querySelector("#endgame");
+        endgame.setAttribute("visible","true");
+        endgame.setAttribute("endgame-refresh","");
+        
+        var player = document.querySelector("#carTest");
+        player.setAttribute("visible","false");
+        
+        var score = document.querySelector("#scoretxt");
+        score.setAttribute('visible','false');
+        
+      }.bind(this));
+    }
+  });
+    
+  AFRAME.registerComponent("intro-component",{
+    schema : {
+      target : {type: "selector"}
+    },
+    init: function(){
+      this.el.addEventListener("click", function(){
+        var intro = document.querySelector("#intro");
+        var linktxt = document.querySelector("#linktxt");
+        var lane = document.querySelector("#lane");
+        var score = document.querySelector('#scoretxt');
+
+        intro.setAttribute("visible","false");
+        intro.setAttribute("position","0 -20 -10");
+        linktxt.setAttribute("visible","false");
+        linktxt.setAttribute("position","0 -20 -10");
+        lane.setAttribute("visible", "true");
+        score.setAttribute('visible','true');
+        
+      }.bind(this));
+    }
+  });
+    
+  AFRAME.registerComponent("score",{
+    schema: {
+      target : {type: "selector"}
+    },
+    tick: function(){
+      
+      function timer(){  
+        var sec = 0;
+        var timer = setInterval(function(){
+            sec++;
+        }, 1000);
+        return timer;
+      }
+      
+      var counter = setInterval(myTimer,1000);
+      
+      function myTimer(){
+        var d = new Date()
+      }
+      
+      var score = document.querySelector("#scoretxt");
+      score.setAttribute('text','value',''+timer()+'');
+      
+    }
+  })
+    
+  </script>
+</head>
+<body>
+  <a-scene fog="type: exponential; density:0.030;" 
+           environment="ground:none;
+                        skyType:gradient;
+                        skyColor:orange;"
+           physics="gravity:0;debug:false;"
+           >
+    <a-assets>
+      <audio id="synth" src="https://cdn.glitch.com/b8b2e270-74f4-42ad-9009-9a49485472fb%2F424610__waveplay__120-bpm-lofi-synthwave-loop.mp3?1528835166308"
+             autoplay 
+             preload 
+             loop></audio>
+    </a-assets>
+    
+    <a-entity id="scoretxt" score position="4.5 11 -3" scale="10 10 10" visible="false">
+      <a-animation attribute="visible" from="false" to="true" delay="5000"></a-animation>
+    </a-entity>
+    
+    <a-entity id="carTest"
+              class="cube"
+              geometry="box"
+              dynamic-body="mass:0.1;"
+              collision-check
+              position="-2 7.5 -4">
+    </a-entity>
+    <a-entity>
+      <a-entity id="player" 
+                camera
+                keyboard-controls="enabled:false;"
+                position="0 9 0"
+                gearmove-a="target:#carTest;" gearmove-b="target:#carTest;" >
+        <a-entity cursor="rayOrigin:mouse;fuse:false;" raycaster></a-entity>
+      </a-entity>
+    </a-entity>
+    <a-box color="#595959" position="0.22064238335551256 2.449083263898743 -6.237740426041015" material="" geometry=""></a-box>
+    
+    <a-box id="sun" color="#ff7e7c" emissive="#ff004c" position="0 0 -150.253" material="fog:false" geometry="primitive:circle" scale="50 50 50"></a-box>    
+    
+    <a-entity id="skyline" position="0.5 -0.5 -105" scale="2 2 2">
+      <a-entity>
+        <a-box color="#595959" position="4.897 4.055 -16.859" material="fog:false" geometry="" scale="1.52 8.123 2.692"></a-box>
+        <a-box color="#595959" position="3.988 2.82 -16.923" material="fog:false" geometry="" scale="1 6.14 2.349"></a-box>
+        <a-box color="#595959" position="-3.0485 3.0588 -16.7247" material="fog:false" geometry="" scale="2.37 6.191 2.563"></a-box>
+        <a-box color="#595959" position="-5.931 3.89 -16.709" material="fog:false" geometry="" scale="2.37 7.997404540976871 2.563"></a-box>
+        <a-box color="#595959" position="-8.432904214385399 2.482523049161725 -16.694100914951413" material="fog:false" geometry="" scale="1.68 5.023 2.065"></a-box>
+        <a-box color="#595959" position="-11.087498975260443 7.513948134310073 -16.702975098570924" material="fog:false" geometry="" scale="2.426 15.295587722870424 2.165"></a-box>
+        <a-box color="#595959" position="-11.087498975260443 7.513948134310073 -16.702975098570924" material="fog:false" geometry="" scale="2.426 15.295587722870424 2.165"></a-box>
+        <a-box color="#595959" position="7.541292740650535 4.72 -16.713" material="fog:false" geometry="" scale="2.336 9.701421575584948 2.477"></a-box>
+        <a-box color="#595959" position="10.57285453509006 3.041975301311904 -16.698" material="fog:false" geometry="" scale="2.537940480050154 6.602 2.316"></a-box>
+      </a-entity>
+          
+      <a-box color="#595959" position="1.636457049185577 5.52 -16.519" material="fog:false" geometry="" scale="1.856 11.126 2.248"></a-box>
+    
+      <a-box color="#595959" position="-0.497 6.3847626738653105 -16.671554829405824" material="fog:false" geometry="" scale="1.6 13.967010531907576 2.644"></a-box>
+    </a-entity>
+   
+    <a-entity class="link"
+              id="intro"
+              geometry=""
+              material="shader: flat; color:#595959"
+              position="0 8.577191809289869 -3.159772389130443"
+              scale="5.369 3.402 0.316"
+              intro-component>
+      <a-entity id="linktxt" 
+                text="value: Click me to dismiss or just wait 5 seconds" 
+                position="0.1 -.15 0.5">
+        <a-animation attribute="visible" 
+                     from="true" 
+                     to="false" 
+                     delay="5000"></a-animation>
+      </a-entity>
+      <a-entity position="0.35 .2 0.5" 
+                text="value:Happy $day">
+        <a-animation attribute="visible" 
+                     from="true" 
+                     to="false" 
+                     delay="5000"></a-animation>
+      </a-entity>
+      <a-entity position="0.09 0.02 0.5"
+                text="value:Tap the Left and Right arrow keys to move!">
+        <a-animation attribute="visible" 
+                     from="true" 
+                     to="false" 
+                     delay="5000"></a-animation>
+      </a-entity>
+      
+      <a-animation attribute="visible" 
+                   from="true" 
+                   to="false"
+                   delay="5000" 
+                   dur="1000"></a-animation> 
+      
+    </a-entity>
+    
+    <a-entity id="endgame" 
+              position="0 11.077191809289869 -3.59772389130443"
+              scale="5.869 2.902 0.01"
+              visible="false" 
+              material="shader:flat;color:#595959;"
+              geometry="">
+      <a-entity id="endgametxt"
+                scale="1 2 1"
+                text="value:$endValue;" 
+                position="0.15 0.09 0.6"></a-entity>
+      <a-entity id="endgametxt2"
+                scale="1 2 1"
+                text="value:Click here to restart"
+                position="0.32 -0.1 0.6"></a-entity>
+    </a-entity>
+    
+    <a-box id="incomingCar"
+           static-body
+           material="fog:false"
+           position="-2 7.5 -100">
+      <a-animation attribute="position" 
+                   to="-2 7.5 5" 
+                   repeat="indefinite" 
+                   easing="linear"
+                   begin="6000"
+                   dur="6000"></a-animation>
+    </a-box>
+    
+    <a-box id="incomingCar2"
+           material="fog:false"
+           static-body
+           position="1 7.5 -100">
+      <a-animation attribute="position" 
+                   to="1 7.5 5" 
+                   repeat="indefinite" 
+                   easing="linear" 
+                   delay="3000"
+                   dur="7000"></a-animation>
+    </a-box>
+    
+    <a-box id="incomingCar3"
+           material="fog:false"
+           static-body
+           position="-2 7.5 -200">
+      <a-animation attribute="position"
+                   to="-2 7.5 5"
+                   repeat="indefinite"
+                   easing="linear"
+                   dur="7500"></a-animation>
+    </a-box>
+    
+    <a-box id="incomingCar4"
+           material="fog:false"
+           static-body
+           position="1 7.5 -200">
+      <a-animation attribute="position"
+                   to="1 7.5 5"
+                   repeat="indefinite"
+                   easing="linear"
+                   dur="8000"></a-animation>  
+    </a-box>
+    
+    <a-box id="incomingCar5"
+           material="fog:false"
+           static-body
+           position="-2 7.5 -200">
+      <a-animation attribute="position"
+                   to="-2 7.5 5"
+                   repeat="indefinite"
+                   easing="linear"
+                   dur="4000"
+                   begin="20000"></a-animation>
+    </a-box>
+    
+    <a-box id="incomingCar6"
+           material="fog:false"
+           static-body
+           position="-2 7.5 -200">
+      <a-animation attribute="position"
+                   to="-2 7.5 5"
+                   repeat="indefinite"
+                   easing="linear"
+                   dur="6000"
+                   begin="18000"></a-animation>
+    </a-box>
+    
+    <a-box id="incomingCar7"
+           material="fog:false"
+           static-body
+           position="1 7.5 -200">
+      <a-animation attribute="position"
+                   to="1 7.5 5"
+                   repeat="indefinite"
+                   easing="linear"
+                   dur="8000"
+                   begin="11000"></a-animation>
+    </a-box>
+    
+    <a-box id="incomingCar8"
+           material="fog:false"
+           static-body
+           position="-2 7.5 -200">
+      <a-animation attribute="position"
+                   to="-2 7.5 5"
+                   repeat="indefinite"
+                   easing="linear"
+                   dur="5000"
+                   begin="9000"></a-animation>
+    </a-box>
+    
+    <a-box id="incomingCar9"
+           material="fog:false"
+           static-body
+           position="1 7.5 -200">
+      <a-animation attribute="position"
+                   to="1 7.5 5"
+                   repeat="indefinite"
+                   easing="linear"
+                   dur="6500"
+                   delay="14000"></a-animation>
+    </a-box>    
+    
+    <a-box id="incomingCar10"
+           material="fog:false"
+           static-body
+           position="1 7.5 -200">
+      <a-animation attribute="position"
+                   to="1 7.5 5"
+                   repeat="indefinite"
+                   easing="linear"
+                   dur="6500"
+                   delay="14000"></a-animation>
+    </a-box>
+    
+    <a-box id="incomingCar11"
+           material="fog:false"
+           static-body
+           position="-2 7.5 -200">
+      <a-animation attribute="position"
+                   to="-2 7.5 5"
+                   repeat="indefinite"
+                   easing="linear"
+                   dur="6500"
+                   delay="21000"></a-animation>
+    </a-box>      
+    
+    <a-entity id="lane" 
+              scale=".3 .2 5" 
+              position="0 7 -100.238" 
+              material="color:yellow;shader:flat;fog:false" 
+              geometry="plane" 
+              visible="false">
+      <a-animation attribute="visible" 
+                   from="false" 
+                   to="true" 
+                   delay="5000"></a-animation>
+      <a-animation attribute="position" 
+                   to="0 7 3" dur="650" 
+                   repeat="indefinite" 
+                   easing="linear"></a-animation>
+    </a-entity>
+    
+    <a-box id="road" color="#595959" position="0.039414164485080616 6.454955079868366 -20.894945093308245" material="fog:false" geometry="" scale="5.5992916964873505 1 160.29123976794233" static-body></a-box>
+    
+    <a-box id="roadWall1" static-body position="2.9237665627246486 7.324803560518637 -13.955226669024103" material="color:#dedede;fog:false" geometry="" scale="0.22610235023687686 0.7501312395816857 161.52805410486957"></a-box>
+    
+    <a-box id="roadWall1-2" static-body color="#595959" position="-2.8791922473430416 7.325 -13.955" material="color:#dedede;fog:false" geometry="" scale="0.226 0.75 161.528"></a-box>
+    
+    <a-entity position="0 0 -5.3770786762731095"></a-entity>
+    
+    <a-ocean color="aqua" depth="250" width="250" density="90"></a-ocean>
+  </a-scene>
+</body>
+</html>
